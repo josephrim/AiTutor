@@ -1,10 +1,14 @@
 import { NextRequest, NextResponse } from "next/server";
 import { PrismaClient } from "@prisma/client";
 import jwt, { JwtPayload } from "jsonwebtoken";
-import fs from "fs";
-import path from "path";
+import { supabase } from "@/utils/supabase";
 
 const prisma = new PrismaClient();
+export const config = {
+  api: {
+    bodyParser: false, // Disable Next.js body parsing for file uploads
+  },
+};
 
 export async function POST(req: NextRequest) {
   try {
@@ -27,28 +31,35 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "No file uploaded" }, { status: 400 });
     }
 
-    const uploadsDir = path.join(process.cwd(), "uploads");
+    const fileName = `${Date.now()}-${file.name}`;
 
-    if (!fs.existsSync(uploadsDir)) {
-      fs.mkdirSync(uploadsDir, { recursive: true });
+    const { data, error } = await supabase.storage
+      .from("uploads") // Replace with your bucket name
+      .upload(`pdfs/${fileName}`, Buffer.from(await file.arrayBuffer()), {
+        contentType: "application/pdf",
+        upsert: true, // Overwrite existing file
+      });
+
+    if (error) {
+      console.error("Supabase upload error:", error);
+      return NextResponse.json(
+        { error: "Failed to upload file." },
+        { status: 500 }
+      );
     }
 
-    const fileName = `${Date.now()}-${file.name}`;
-    const filePath = path.join(uploadsDir, fileName);
-
-    await fs.promises.writeFile(
-      filePath,
-      Buffer.from(await file.arrayBuffer())
-    );
+    const {
+      data: { publicUrl },
+    } = supabase.storage.from("uploads").getPublicUrl(data.path);
 
     const pdfMetadata = {
-      fileName,
+      publicUrl,
       uploadedAt: new Date().toISOString(),
     };
     const pdf = await prisma.pDF.create({
       data: {
         userId: userId,
-        fileUrl: fileName,
+        fileUrl: publicUrl,
         metadata: pdfMetadata,
       },
     });

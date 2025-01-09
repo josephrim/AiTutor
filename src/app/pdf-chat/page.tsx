@@ -10,8 +10,7 @@ import { useRouter } from "next/navigation";
 
 export default function PDFChatPage() {
   const searchParams = useSearchParams();
-  const fileName = searchParams.get("fileUrl");
-  const [fileUrl, setFileUrl] = useState<string | null>(null);
+  const fileUrl = searchParams.get("fileUrl");
 
   const [pdfText, setPdfText] = useState<string>("");
   const [annotations, setAnnotations] = useState<Annotation[]>([]);
@@ -38,15 +37,11 @@ export default function PDFChatPage() {
 
   useEffect(() => {
     const loadPdf = async () => {
-      const text = await extractPdfText(
-        `/api/files/${encodeURIComponent(fileName!)}`
-      );
+      const text = await extractPdfText(fileUrl!);
       setPdfText(text);
     };
 
-    setFileUrl(`/api/files/${encodeURIComponent(fileName!)}`);
-
-    if (fileName) {
+    if (fileUrl) {
       loadPdf();
     }
 
@@ -54,24 +49,24 @@ export default function PDFChatPage() {
     const storedChatHistory = localStorage.getItem("chatHistory");
     const storedAnnotations = localStorage.getItem("annotations");
 
-    if (storedfileUrl === fileName) {
+    if (storedfileUrl === fileUrl) {
       if (storedChatHistory) setChatHistory(JSON.parse(storedChatHistory));
       if (storedAnnotations) setAnnotations(JSON.parse(storedAnnotations));
     } else {
       localStorage.removeItem("chatHistory");
       localStorage.removeItem("annotations");
     }
-  }, [fileName]);
+  }, [fileUrl]);
 
   useEffect(() => {
-    localStorage.setItem("fileUrl", fileName!);
+    localStorage.setItem("fileUrl", fileUrl!);
     if (chatHistory.length > 0)
       localStorage.setItem("chatHistory", JSON.stringify(chatHistory));
     if (annotations.length > 0)
       localStorage.setItem("annotations", JSON.stringify(annotations));
-  }, [fileName, chatHistory, annotations]);
+  }, [fileUrl, chatHistory, annotations]);
 
-  if (!fileName || !fileUrl) {
+  if (!fileUrl) {
     return (
       <div className="flex items-center justify-center h-screen">
         <p className="text-gray-500">No PDF found. Please upload a file.</p>
