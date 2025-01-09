@@ -34,5 +34,5 @@ export default function Home() {
     checkSession();
   }, [router]);
 
-  return null;
+  return <div></div>;
 }

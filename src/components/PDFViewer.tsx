@@ -3,6 +3,7 @@
 import { Annotation } from "@/types";
 import { useEffect, useState } from "react";
 import { pdfjs, Document, Page } from "react-pdf";
+import "core-js/proposals/promise-with-resolvers";
 
 import "react-pdf/dist/esm/Page/AnnotationLayer.css";
 import "react-pdf/dist/esm/Page/TextLayer.css";

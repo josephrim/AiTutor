@@ -74,7 +74,6 @@ export async function POST(req: Request) {
 
 function parseResponse(response: string): AIResponse {
   try {
-    console.log(response);
     const parsedJson = JSON.parse(response);
 
     return {

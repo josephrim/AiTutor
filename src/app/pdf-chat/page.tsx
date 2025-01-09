@@ -10,7 +10,9 @@ import { useRouter } from "next/navigation";
 
 export default function PDFChatPage() {
   const searchParams = useSearchParams();
-  const fileUrl = searchParams.get("fileUrl");
+  const fileName = searchParams.get("fileUrl");
+  const [fileUrl, setFileUrl] = useState<string | null>(null);
+
   const [pdfText, setPdfText] = useState<string>("");
   const [annotations, setAnnotations] = useState<Annotation[]>([]);
   const [goToPage, setGoToPage] = useState<number | null>(null);
@@ -36,11 +38,15 @@ export default function PDFChatPage() {
 
   useEffect(() => {
     const loadPdf = async () => {
-      const text = await extractPdfText(fileUrl ?? "");
+      const text = await extractPdfText(
+        `/api/files/${encodeURIComponent(fileName!)}`
+      );
       setPdfText(text);
     };
 
-    if (fileUrl) {
+    setFileUrl(`/api/files/${encodeURIComponent(fileName!)}`);
+
+    if (fileName) {
       loadPdf();
     }
 
@@ -48,24 +54,24 @@ export default function PDFChatPage() {
     const storedChatHistory = localStorage.getItem("chatHistory");
     const storedAnnotations = localStorage.getItem("annotations");
 
-    if (storedfileUrl === fileUrl) {
+    if (storedfileUrl === fileName) {
       if (storedChatHistory) setChatHistory(JSON.parse(storedChatHistory));
       if (storedAnnotations) setAnnotations(JSON.parse(storedAnnotations));
     } else {
       localStorage.removeItem("chatHistory");
       localStorage.removeItem("annotations");
     }
-  }, [fileUrl]);
+  }, [fileName]);
 
   useEffect(() => {
-    localStorage.setItem("fileUrl", fileUrl!);
+    localStorage.setItem("fileUrl", fileName!);
     if (chatHistory.length > 0)
       localStorage.setItem("chatHistory", JSON.stringify(chatHistory));
     if (annotations.length > 0)
       localStorage.setItem("annotations", JSON.stringify(annotations));
-  }, [fileUrl, chatHistory, annotations]);
+  }, [fileName, chatHistory, annotations]);
 
-  if (!fileUrl) {
+  if (!fileName || !fileUrl) {
     return (
       <div className="flex items-center justify-center h-screen">
         <p className="text-gray-500">No PDF found. Please upload a file.</p>

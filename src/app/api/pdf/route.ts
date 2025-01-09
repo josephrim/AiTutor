@@ -27,7 +27,7 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "No file uploaded" }, { status: 400 });
     }
 
-    const uploadsDir = path.join(process.cwd(), "public/uploads");
+    const uploadsDir = path.join(process.cwd(), "uploads");
 
     if (!fs.existsSync(uploadsDir)) {
       fs.mkdirSync(uploadsDir, { recursive: true });
@@ -48,7 +48,7 @@ export async function POST(req: NextRequest) {
     const pdf = await prisma.pDF.create({
       data: {
         userId: userId,
-        fileUrl: `/uploads/${fileName}`,
+        fileUrl: fileName,
         metadata: pdfMetadata,
       },
     });

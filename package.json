@@ -4,7 +4,7 @@
   "private": true,
   "scripts": {
     "dev": "next dev --turbopack",
-    "build": "next build",
+    "build": "npx prisma generate & npx prisma migrate & next build",
     "start": "next start",
     "lint": "next lint"
   },
@@ -13,6 +13,7 @@
     "autoprefixer": "^10.4.20",
     "axios": "^1.7.9",
     "bcrypt": "^5.1.1",
+    "core-js": "^3.40.0",
     "jsonwebtoken": "^9.0.2",
     "multer": "^1.4.5-lts.1",
     "next": "^15.1.3",
